@@ -1,0 +1,11 @@
+[package]
+name = "tinymd"
+version = "0.1.0"
+authors = ["Jie Ni <nijie321@outlook.com>"]
+edition = "2018"
+description = "A tiny markdown compiler"
+homepage = "https://jesselawson.org/rust"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
