@@ -33,56 +33,37 @@ fn parse_markdown_file(_filename: &str){
        let line_contents = line.unwrap();
        let mut first_char: Vec<char> = line_contents.chars().take(1).collect();
 
-       let contents: Vec<&str> = line_contens.split(' ').collect().unwrap();
-       let first_content = line_contents.split(' ').nth(0).unwrap();
-       
-       let f_len = first_content.len();
+       let contents: Vec<&str> = line_contents.split(' ').collect();
+       let mut symbol_len = 0;
 
        let mut output_line = String::new();
 
-       if keywords.contains(&first_content) {
-           // println!("{}",format!("<h{}>", first_content.len()));
-           if _ptag {
-                _ptag = false;
-                output_line.push_str("</p>\n");
-           }
+       if keywords.contains(&contents[0]){
+           symbol_len = contents[0].len();
+           let full_contents = &contents[1..].join(" ");
 
-           if _htag {
+           if _ptag {
+               _ptag = false;
+               output_line.push_str("</p>\n");
+           }
+           
+           if _htag{
                _htag = false;
-               output_line.push_str(&format!("</h{}>\n", f_len));
-           }
-           
-           _htag = true;
-           output_line.push_str(&format!("<h{}>",f_len ));
-           output_line.push_str(&line_contents[2..]);
-       }
-           
-    
-       match first_char.pop(){
-           Some('#') => {
-               if _ptag {
-                   _ptag = false;
-                   output_line.push_str("</p>\n");
-               }
+               output_line.push_str(&format!("</h{}>\n", symbol_len));
                
-               if _htag {
-                   _htag = false;
-                   output_line.push_str("</h1>\n");
-                   
-               }
-               _htag = true;
-               output_line.push_str("<h1>");
-               output_line.push_str(&line_contents[2..]);
-               // output_line.push_str(&line_contents);
-           },
-           _ => {
-               if !_ptag {
-                   _ptag = true;
-                   output_line.push_str("<p>");
-               }
-               output_line.push_str(&line_contents);
            }
-       };
+           _htag = true;
+           output_line.push_str(&format!("<h{}>", symbol_len));
+           output_line.push_str(full_contents);
+
+       }else{
+           if !_ptag {
+               _ptag = true;
+               output_line.push_str("<p>");
+           }
+           output_line.push_str(&contents.join(" "));
+       }
+
        
        if _ptag {
            _ptag = false;
@@ -90,7 +71,7 @@ fn parse_markdown_file(_filename: &str){
        }
        if _htag {
            _htag = false;
-           output_line.push_str("</h1>\n");
+           output_line.push_str(&format!("</h{}>\n", symbol_len));
        }
 
        if output_line != "<p></p>\n" {
@@ -99,10 +80,12 @@ fn parse_markdown_file(_filename: &str){
 
     }
 
-   // for line in &tokens {
-   //     outfile.write_all(line.as_bytes())
-   //          .expect("[ ERROR ] Could not write to output file!");
-   // }
+
+   for line in &tokens {
+       // println!("{}", line);
+       outfile.write_all(line.as_bytes())
+            .expect("[ ERROR ] Could not write to output file!");
+   }
    println!("[ INFO ] Parsing complete!");
 }
 
