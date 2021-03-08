@@ -3,7 +3,11 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 use std::io::Write;
+use std::any::type_name;
 
+fn print_type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
 
 fn parse_markdown_file(_filename: &str){
     print_short_banner();
@@ -27,18 +31,22 @@ fn parse_markdown_file(_filename: &str){
 
     let reader = BufReader::new(file);
     
-    let mut keywords = vec!["#", "##", "###"];
-
+    // let keywords = vec!["#","##","###"];
+    // print_type_of(&keywords);
+    // let keywords_2 = (1..=6).map(|n| "#".repeat(n).clone() ).collect::<Vec<&str>>();
+    let keywords: Vec<String> = (1..=6).map(|n| "#".repeat(n) ).collect();
+    // print_type_of(&keywords_2);
+    
     for line in reader.lines(){
        let line_contents = line.unwrap();
-       let mut first_char: Vec<char> = line_contents.chars().take(1).collect();
 
        let contents: Vec<&str> = line_contents.split(' ').collect();
        let mut symbol_len = 0;
 
        let mut output_line = String::new();
 
-       if keywords.contains(&contents[0]){
+
+       if keywords.contains(&contents[0].to_string()){
            symbol_len = contents[0].len();
            let full_contents = &contents[1..].join(" ");
 
@@ -82,9 +90,9 @@ fn parse_markdown_file(_filename: &str){
 
 
    for line in &tokens {
-       // println!("{}", line);
-       outfile.write_all(line.as_bytes())
-            .expect("[ ERROR ] Could not write to output file!");
+       println!("{}", line);
+       // outfile.write_all(line.as_bytes())
+       //      .expect("[ ERROR ] Could not write to output file!");
    }
    println!("[ INFO ] Parsing complete!");
 }
@@ -111,10 +119,6 @@ fn print_long_banner(){
   );
 }
 
-fn get_version() -> String {
-    String::from(env!("CARGO_PKG_VERSION"))
-    // env!("CARGO_PKG_VERSION")
-}
 fn usage(){
     // let the_version = get_version();
     // println!("tinymd, a markdown compiler writeen by Jie");
