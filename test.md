@@ -5,7 +5,7 @@
 This is a report about my favorite writer. His name is Jesse Lawson.
 
 # Jesse's favorite food
-## Jesse's favorite food
+## Jesse's favorite **food**
 
 Jesse really likes enchiladas and any kind of sushi. 
 

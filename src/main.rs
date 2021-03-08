@@ -9,6 +9,18 @@ fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
 
+fn convert_bold(s: &str) -> Option<String>{
+    if (s.starts_with("**") && s.ends_with("**")) || 
+        (s.starts_with("__") && s.ends_with("__"))
+    {
+        let s_len = s.len();
+        print_type_of(&s);
+        return Some(format!("{}{}{}", "<strong>" , &s[2..s_len-2], "</strong>"))
+    }
+    None
+}
+
+
 fn parse_markdown_file(_filename: &str){
     print_short_banner();
     println!("[ INFO ] Trying to parse {}...", _filename);
@@ -26,16 +38,14 @@ fn parse_markdown_file(_filename: &str){
 
     let mut _ptag: bool = false;
     let mut _htag: bool = false;
+    let mut _bquotetag: bool = false;
 
     let mut tokens: Vec<String> = Vec::new();
 
     let reader = BufReader::new(file);
     
-    // let keywords = vec!["#","##","###"];
-    // print_type_of(&keywords);
-    // let keywords_2 = (1..=6).map(|n| "#".repeat(n).clone() ).collect::<Vec<&str>>();
-    let keywords: Vec<String> = (1..=6).map(|n| "#".repeat(n) ).collect();
-    // print_type_of(&keywords_2);
+    let mut keywords: Vec<String> = (1..=6).map(|n| "#".repeat(n) ).collect();
+        
     
     for line in reader.lines(){
        let line_contents = line.unwrap();
@@ -44,11 +54,49 @@ fn parse_markdown_file(_filename: &str){
        let mut symbol_len = 0;
 
        let mut output_line = String::new();
+        
+       // let mut bolds = contents
+       //              .iter()
+       //              .map(|x| convert_bold(x))
+       //              .filter(|x| !x.is_none())
+       //              .peekable();
 
+       // if bolds.peek().is_some() {
+       //    println!("{:?}", bolds.next().unwrap());
+       // }
+       // println!("{}", 
+       // contents
+       //      .iter()
+       //      .map(|x| convert_bold(x))
+       //      .filter(|x| !x.is_none())
+       //      // .filter(|x| x.contains("**"))
+       //      // .map(|x|{
+       //      //    print_type_of(&x);
+       //      //    let l = &x.len();
+       //      //     format!("{}{}{}","<strong>",&x[2..l-2],"</strong>")
+       //      // })
+       //      .collect::<Vec<_>>()
+       //      .is_empty()
+       //  );
 
+       // println!("{:?}",contents.iter().filter(|x| x.contains("**") ).collect::<Vec<_>>());
+    
        if keywords.contains(&contents[0].to_string()){
            symbol_len = contents[0].len();
-           let full_contents = &contents[1..].join(" ");
+           let full_contents = &contents[1..].iter()
+               .map(|&x| {
+                   if let Some(s) = convert_bold(x) {
+                       return s
+                       // return &s[..]
+                   }else{
+                       return x.to_string()
+                   }
+               })
+               .collect::<Vec<_>>()
+               .join(" ");
+
+            // println!("{}", full_contents1);
+           // let full_contents = &contents[1..].join(" ");
 
            if _ptag {
                _ptag = false;
@@ -89,11 +137,11 @@ fn parse_markdown_file(_filename: &str){
     }
 
 
-   for line in &tokens {
-       println!("{}", line);
-       // outfile.write_all(line.as_bytes())
-       //      .expect("[ ERROR ] Could not write to output file!");
-   }
+   // for line in &tokens {
+   //     println!("{}", line);
+   //     // outfile.write_all(line.as_bytes())
+   //     //      .expect("[ ERROR ] Could not write to output file!");
+   // }
    println!("[ INFO ] Parsing complete!");
 }
 
@@ -125,7 +173,12 @@ fn usage(){
     // println!("The Version: {}", the_version);
     print_long_banner();
 }
+
 fn main() {
+    // if let Some(s) = convert_bold("**hello**") {
+    //     println!("{}", s);
+    // };
+    
     let args: Vec<String> = std::env::args().collect();
     match args.len(){
         1 => usage(),
