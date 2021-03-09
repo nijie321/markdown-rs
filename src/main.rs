@@ -6,27 +6,18 @@ use std::io::{BufRead, BufReader};
 use std::io::Write;
 use std::any::type_name;
 
+mod convert;
+mod info;
+
 fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
 
-fn convert_bold(s: &str) -> Option<String>{
-    if (s.starts_with("**") && s.ends_with("**")) || 
-        (s.starts_with("__") && s.ends_with("__"))
-    {
-        let s_len = s.len();
-        // print_type_of(&s);
-        return Some(format!("{}{}{}", "<strong>" , &s[2..s_len-2], "</strong>"))
-    }
-    None
-}
-
 fn parse_markdown_file(_filename: &str){
-    print_short_banner();
+    // print_short_banner();
     println!("[ INFO ] Trying to parse {}...", _filename);
     let input_filename = Path::new(_filename);
     
-    // let output_filename = _filename.split('.').collect::<Vec<&str>>();
     let mut output_filename = String::from(_filename.split('.').nth(0).unwrap());
     output_filename.push_str(".html");
 
@@ -35,10 +26,6 @@ fn parse_markdown_file(_filename: &str){
 
     let file = File::open(&input_filename)
                 .expect("[ ERROR ] Failed to open file!");
-
-    let mut _ptag: bool = false;
-    let mut _htag: bool = false;
-    let mut _bquotetag: bool = false;
 
     let mut tokens: Vec<String> = Vec::new();
 
@@ -55,8 +42,6 @@ fn parse_markdown_file(_filename: &str){
         let mut blockquote = false;
 
         if let Some((symbol, contents)) = contents1{
-            
-            // println!("{} {}",symbol, contents);
             
             if keywords.contains(&symbol.to_string()) {
                 let s_len = symbol.len();
@@ -80,7 +65,7 @@ fn parse_markdown_file(_filename: &str){
                 &tmp_contents
                     .split(' ')
                     .map(|x| {
-                        if let Some(s) = convert_bold(x) {
+                        if let Some(s) = convert::bold(x) {
                             return s
                         }
                         x.to_string()
@@ -116,36 +101,10 @@ fn parse_markdown_file(_filename: &str){
    println!("[ INFO ] Parsing complete!");
 }
 
-fn print_short_banner(){
-    println!("{}", get_title());
-}
-
-fn get_title() -> String{
-    let mut the_title = String::from(env!("CARGO_PKG_NAME"));
-    the_title.push_str(" (v");
-    the_title.push_str(env!("CARGO_PKG_VERSION"));
-    the_title.push_str("), ");
-    the_title.push_str(env!("CARGO_PKG_DESCRIPTION"));
-    the_title
-}
-
-
-fn print_long_banner(){
-    print_short_banner();
-  println!("Written by: {}\nHomepage: {}\nUsage: tinymd <somefile>.md\n",
-    env!("CARGO_PKG_AUTHORS"),
-    "home page",
-  );
-}
-
-fn usage(){
-    print_long_banner();
-}
-
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.len(){
-        1 => usage(),
+        1 => info::usage(),
         2 => parse_markdown_file(&args[1]),
         _ => {
             println!("[ERROR] Invalid invocation (you done goofed!)");
