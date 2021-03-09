@@ -102,80 +102,19 @@ fn parse_markdown_file(_filename: &str){
                     blockquote = false;
                 }
                 temp_s.push_str(&format!("</h{}>", s_len));
-                println!("{}", temp_s);
+                
+                tokens.push(temp_s);
+                // println!("{}", temp_s);
             }else{
                 let full_contents = format!("<p>{} {}</p>", symbol, contents.trim());
                 
-                println!("{}", full_contents);
-                // println!("inside else!!!!{}", format!("{} {}", symbol, contents));
+                if full_contents != "<p> </p>"{
+                    tokens.push(full_contents);
+                }
             }
         }
         
-
-       let contents: Vec<&str> = line_contents.split(' ').collect();
-       let mut symbol_len = 0;
-
-       let mut output_line = String::new();
-
-       if keywords.contains(&contents[0].to_string()){
-           symbol_len = contents[0].len();
-           let full_contents = &contents[1..].iter()
-               .map(|&x| {
-                   if let Some(s) = convert_bold(x) {
-                       // if let Some(k) = convert_blockquote(&s){
-                       //     return k
-                       // }
-                       return s
-                       // return &s[..]
-                   }
-                   // if let Some(k) = convert_blockquote(x){
-                   //     return k
-                   // }
-                   x.to_string()
-               })
-               .collect::<Vec<String>>()
-               .join(" ");
-
-           // let full_contents = &contents[1..].join(" ");
-
-           if _ptag {
-               _ptag = false;
-               output_line.push_str("</p>\n");
-           }
-           
-           if _htag{
-               _htag = false;
-               output_line.push_str(&format!("</h{}>\n", symbol_len));
-               
-           }
-           _htag = true;
-           output_line.push_str(&format!("<h{}>", symbol_len));
-           output_line.push_str(full_contents);
-
-       }else{
-           if !_ptag {
-               _ptag = true;
-               output_line.push_str("<p>");
-           }
-           output_line.push_str(&contents.join(" "));
-       }
-
-       
-       if _ptag {
-           _ptag = false;
-           output_line.push_str("</p>\n");
-       }
-       if _htag {
-           _htag = false;
-           output_line.push_str(&format!("</h{}>\n", symbol_len));
-       }
-
-       if output_line != "<p></p>\n" {
-           tokens.push(output_line);
-       }
-
     }
-
 
    for line in &tokens {
        println!("{}", line);
@@ -203,22 +142,15 @@ fn print_long_banner(){
     print_short_banner();
   println!("Written by: {}\nHomepage: {}\nUsage: tinymd <somefile>.md\n",
     env!("CARGO_PKG_AUTHORS"),
-    env!("CARGO_PKG_HOMEPAGE")
+    "home page",
   );
 }
 
 fn usage(){
-    // let the_version = get_version();
-    // println!("tinymd, a markdown compiler writeen by Jie");
-    // println!("The Version: {}", the_version);
     print_long_banner();
 }
 
 fn main() {
-    // if let Some(s) = convert_bold("**hello**") {
-    //     println!("{}", s);
-    // };
-    
     let args: Vec<String> = std::env::args().collect();
     match args.len(){
         1 => usage(),
