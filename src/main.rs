@@ -32,10 +32,11 @@ fn parse_markdown_file(_filename: &str){
     let mut keywords: Vec<String> = (1..=6).map(|n| "#".repeat(n) ).collect();
         
     
-    for line in reader.lines(){
-       let line_contents = line.unwrap();
+    for line in reader.lines().map(|l| l.unwrap()){
+    // for line in reader.lines()?{
+       // let line_contents = line.unwrap();
     
-        let contents1: Option<(&str, &str)> = line_contents.split_once(' ');
+        let contents1: Option<(&str, &str)> = line.split_once(' ');
 
         let mut blockquote = false;
 
@@ -53,6 +54,8 @@ fn parse_markdown_file(_filename: &str){
                 }
                 
                 let mut tmp_contents = &contents[..];
+                
+                utility::print_type_of(&tmp_contents);
 
                 if blockquote{
                     tmp_contents = &tmp_contents[2..];
@@ -60,16 +63,7 @@ fn parse_markdown_file(_filename: &str){
 
                 // println!("blockquote!!!!!!!{}",
                 temp_s.push_str(
-                &tmp_contents
-                    .split(' ')
-                    .map(|x| {
-                        if let Some(s) = convert::bold(x) {
-                            return s
-                        }
-                        x.to_string()
-                    })
-                    .collect::<Vec<_>>()
-                    .join(" ")
+                    &convert::converter(&tmp_contents)
                 );
 
                 if blockquote{
@@ -82,20 +76,29 @@ fn parse_markdown_file(_filename: &str){
                 tokens.push(temp_s);
                 // println!("{}", temp_s);
             }else{
-                let full_contents = format!("<p>{} {}</p>\n", symbol, contents.trim());
                 
-                if full_contents != "<p> </p>"{
-                    tokens.push(full_contents);
-                }
+                let combined_contents = format!("{} {}", symbol, contents.trim());
+
+                
+                let contents2 = convert::converter(&combined_contents);
+                println!("{}",contents2);
+                    
+                tokens.push(format!("<p>{}</p>", &convert::converter(&combined_contents)) )
+                
+                // let full_contents = format!("<p>{} {}</p>\n", symbol, contents.trim());
+                
+                // if full_contents != "<p> </p>"{
+                //     tokens.push(full_contents);
+                // }
             }
         }
         
     }
 
    for line in &tokens {
-       // println!("{}", line);
-       outfile.write_all(line.as_bytes())
-            .expect("[ ERROR ] Could not write to output file!");
+       println!("{}", line);
+       // outfile.write_all(line.as_bytes())
+       //      .expect("[ ERROR ] Could not write to output file!");
    }
    println!("[ INFO ] Parsing complete!");
 }
