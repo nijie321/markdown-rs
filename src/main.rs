@@ -8,10 +8,8 @@ use std::any::type_name;
 
 mod convert;
 mod info;
+mod utility;
 
-fn print_type_of<T>(_: &T) {
-    println!("{}", std::any::type_name::<T>())
-}
 
 fn parse_markdown_file(_filename: &str){
     // print_short_banner();
@@ -78,12 +76,13 @@ fn parse_markdown_file(_filename: &str){
                     temp_s.push_str("</blockquote>");
                     blockquote = false;
                 }
-                temp_s.push_str(&format!("</h{}>", s_len));
+                temp_s.push_str(&format!("</h{}>\n", s_len));
+                
                 
                 tokens.push(temp_s);
                 // println!("{}", temp_s);
             }else{
-                let full_contents = format!("<p>{} {}</p>", symbol, contents.trim());
+                let full_contents = format!("<p>{} {}</p>\n", symbol, contents.trim());
                 
                 if full_contents != "<p> </p>"{
                     tokens.push(full_contents);
@@ -94,9 +93,9 @@ fn parse_markdown_file(_filename: &str){
     }
 
    for line in &tokens {
-       println!("{}", line);
-       // outfile.write_all(line.as_bytes())
-       //      .expect("[ ERROR ] Could not write to output file!");
+       // println!("{}", line);
+       outfile.write_all(line.as_bytes())
+            .expect("[ ERROR ] Could not write to output file!");
    }
    println!("[ INFO ] Parsing complete!");
 }
