@@ -1,3 +1,4 @@
+#![feature(str_split_once)]
 use std::path::Path;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -14,12 +15,19 @@ fn convert_bold(s: &str) -> Option<String>{
         (s.starts_with("__") && s.ends_with("__"))
     {
         let s_len = s.len();
-        print_type_of(&s);
+        // print_type_of(&s);
         return Some(format!("{}{}{}", "<strong>" , &s[2..s_len-2], "</strong>"))
     }
     None
 }
 
+fn convert_blockquote(s: &str) -> Option<String>{
+    if s.starts_with(" >"){
+        let s_len = s.len();
+        return Some(format!("{}{}{}", "<blockquote>" , &s[3..], "</blockquote>"))
+    }
+    None
+}
 
 fn parse_markdown_file(_filename: &str){
     print_short_banner();
@@ -49,53 +57,85 @@ fn parse_markdown_file(_filename: &str){
     
     for line in reader.lines(){
        let line_contents = line.unwrap();
+    
+        let contents1: Option<(&str, &str)> = line_contents.split_once(' ');
+
+        let mut blockquote = false;
+
+        if let Some((symbol, contents)) = contents1{
+            
+            // println!("{} {}",symbol, contents);
+            
+            if keywords.contains(&symbol.to_string()) {
+                let s_len = symbol.len();
+                
+                let mut temp_s = format!("<h{}>", s_len);
+                
+                // blockquote
+                if &contents[0..1] == ">"{
+                    blockquote = true;
+                    temp_s.push_str("<blockquote>");
+                }
+                
+                let mut tmp_contents = &contents[..];
+
+                if blockquote{
+                    tmp_contents = &tmp_contents[2..];
+                }
+
+                // println!("blockquote!!!!!!!{}",
+                temp_s.push_str(
+                &tmp_contents
+                    .split(' ')
+                    .map(|x| {
+                        if let Some(s) = convert_bold(x) {
+                            return s
+                        }
+                        x.to_string()
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" ")
+                );
+
+                if blockquote{
+                    temp_s.push_str("</blockquote>");
+                    blockquote = false;
+                }
+                temp_s.push_str(&format!("</h{}>", s_len));
+                println!("{}", temp_s);
+            }else{
+                let full_contents = format!("<p>{} {}</p>", symbol, contents.trim());
+                
+                println!("{}", full_contents);
+                // println!("inside else!!!!{}", format!("{} {}", symbol, contents));
+            }
+        }
+        
 
        let contents: Vec<&str> = line_contents.split(' ').collect();
        let mut symbol_len = 0;
 
        let mut output_line = String::new();
-        
-       // let mut bolds = contents
-       //              .iter()
-       //              .map(|x| convert_bold(x))
-       //              .filter(|x| !x.is_none())
-       //              .peekable();
 
-       // if bolds.peek().is_some() {
-       //    println!("{:?}", bolds.next().unwrap());
-       // }
-       // println!("{}", 
-       // contents
-       //      .iter()
-       //      .map(|x| convert_bold(x))
-       //      .filter(|x| !x.is_none())
-       //      // .filter(|x| x.contains("**"))
-       //      // .map(|x|{
-       //      //    print_type_of(&x);
-       //      //    let l = &x.len();
-       //      //     format!("{}{}{}","<strong>",&x[2..l-2],"</strong>")
-       //      // })
-       //      .collect::<Vec<_>>()
-       //      .is_empty()
-       //  );
-
-       // println!("{:?}",contents.iter().filter(|x| x.contains("**") ).collect::<Vec<_>>());
-    
        if keywords.contains(&contents[0].to_string()){
            symbol_len = contents[0].len();
            let full_contents = &contents[1..].iter()
                .map(|&x| {
                    if let Some(s) = convert_bold(x) {
+                       // if let Some(k) = convert_blockquote(&s){
+                       //     return k
+                       // }
                        return s
                        // return &s[..]
-                   }else{
-                       return x.to_string()
                    }
+                   // if let Some(k) = convert_blockquote(x){
+                   //     return k
+                   // }
+                   x.to_string()
                })
-               .collect::<Vec<_>>()
+               .collect::<Vec<String>>()
                .join(" ");
 
-            // println!("{}", full_contents1);
            // let full_contents = &contents[1..].join(" ");
 
            if _ptag {
@@ -137,11 +177,11 @@ fn parse_markdown_file(_filename: &str){
     }
 
 
-   // for line in &tokens {
-   //     println!("{}", line);
-   //     // outfile.write_all(line.as_bytes())
-   //     //      .expect("[ ERROR ] Could not write to output file!");
-   // }
+   for line in &tokens {
+       println!("{}", line);
+       // outfile.write_all(line.as_bytes())
+       //      .expect("[ ERROR ] Could not write to output file!");
+   }
    println!("[ INFO ] Parsing complete!");
 }
 

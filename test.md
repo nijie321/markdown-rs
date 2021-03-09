@@ -4,12 +4,14 @@
 
 This is a report about my favorite writer. His name is Jesse Lawson.
 
-# Jesse's favorite food
+# Jesse's favorite __food__
 ## Jesse's favorite **food**
 
 Jesse really likes enchiladas and any kind of sushi. 
 
 # Jesse's favorite drink
+
+# > Jesse 1
 
 Jesse likes to drink coffee in the mornings and iced tea throughout the day. Sometimes, he even drinks water. 
 
