@@ -21,14 +21,6 @@ fn convert_bold(s: &str) -> Option<String>{
     None
 }
 
-fn convert_blockquote(s: &str) -> Option<String>{
-    if s.starts_with(" >"){
-        let s_len = s.len();
-        return Some(format!("{}{}{}", "<blockquote>" , &s[3..], "</blockquote>"))
-    }
-    None
-}
-
 fn parse_markdown_file(_filename: &str){
     print_short_banner();
     println!("[ INFO ] Trying to parse {}...", _filename);
