@@ -1,5 +1,7 @@
 
+const UNORDERED_LIST: (&str, &str) = ("-", "+");
 
+// const
 
 pub fn converter(contents: &str) -> String{
     contents.split(' ')
@@ -14,7 +16,13 @@ pub fn converter(contents: &str) -> String{
 
 }
 
-fn bold(s: &str) -> Option<String> {
+fn ordered_list(s: &str) -> Option<String> {
+    // if s.starts_with()
+
+    None
+}
+
+pub fn bold(s: &str) -> Option<String> {
     
     // &line_contents
     //     .split(' ')
