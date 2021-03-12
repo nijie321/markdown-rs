@@ -36,9 +36,15 @@ fn parse_markdown_file(_filename: &str){
     let reader = BufReader::new(file);
     
     let keywords: Vec<&str> = vec!["#","##","###"];
+    
+    let mut see_order_list = false;
+    let mut next_number: usize = 1;
+    // let order_list_ended = false;
+
+    let mut encounter = false;
 
     for line in reader.lines().map(|l| l.unwrap()){
-        
+
         if line != ""{
             let mut p = Parser{
                 symbol_stack:  Vec::new(),
@@ -46,21 +52,23 @@ fn parse_markdown_file(_filename: &str){
             };
 
             for word in line.split_whitespace() {
-                
                 p.symbol_stack.push(word.to_string());
-
             }
             
             while let Some(top) = p.symbol_stack.pop() {
                 
                 let top_len = top.len();
+                if see_order_list && top.parse::<usize>().is_err(){
+                    p.content_stack.insert(0, "</ol>".to_string());
+                    see_order_list = false;
+                }
+
                 if let Some(converted_bold) = convert::bold(&top) {
                     p.content_stack.push(converted_bold);
                 }
-                // else{
-                else if top == ">" {
-                    p.content_stack.push("<blockquote>".to_string());
-                    p.content_stack.insert(0,"</blockquote>".to_string());
+                else if let Some((start, end)) = convert::block_quote(&top){
+                    p.content_stack.push(start);
+                    p.content_stack.insert(0,end);
                 }
                 else if keywords.contains(&top.as_str()){
                     p.content_stack.insert(0, format!("</h{}>", top_len));
@@ -68,7 +76,7 @@ fn parse_markdown_file(_filename: &str){
                 } else{
                     p.content_stack.push(top.to_string())
                 }
-                // }
+
             }
             
             p.content_stack.reverse();
@@ -76,11 +84,38 @@ fn parse_markdown_file(_filename: &str){
             
             if let Some(first_char) = first_item.get(0..1) {
                 if first_char != "<" {
-                    p.content_stack.push(format!("</p>"));
-                    p.content_stack.insert(0, "<p>".to_string());
+                    if let Ok(x) = first_char.parse::<usize>() {
+                        encounter = true;
+                        match x {
+                            1 => {
+                                p.content_stack[0] = "<ol>\n<li>".to_string();
+                                p.content_stack.push("</li>".to_string());
+                            },
+                            _ => {
+                                p.content_stack[0] = "<li>".to_string();
+                                
+                                p.content_stack.push("</li>".to_string());
+                            }
+                        }
+                        println!("numeric!!! {}", x);
+                    }else{
+
+                        // encounter = false;
+                        // if first_char.is_numeric()
+                        // println!("first character = {}", first_char);
+                        p.content_stack.push(format!("</p>"));
+                        p.content_stack.insert(0, "<p>".to_string());
+
+                    }
+
                 }
             }
-                
+
+            if encounter && p.content_stack[0] != "<li>".to_string() && p.content_stack[0] != "<ol>\n<li>".to_string() {
+                tokens.push("</ol>\n".to_string());
+                encounter = false;
+            }
+
             tokens.push(format!("{}\n",p.content_stack.join(" ")) );
             
             for line in &tokens{
@@ -88,7 +123,6 @@ fn parse_markdown_file(_filename: &str){
             }
         
         }
-
     }
    println!("[ INFO ] Parsing complete!");
 }
